@@ -1,5 +1,9 @@
 package br.com.alura.helloapp.ui.home
 
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.edit
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import br.com.alura.helloapp.database.ContatoDao
@@ -13,8 +17,10 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ListaContatosViewModel @Inject constructor(
-    private  val contatoDao: ContatoDao
+    private  val contatoDao: ContatoDao,
+    private val dataStore: DataStore<Preferences>
 ) : ViewModel() {
+
 
     private val _uiState = MutableStateFlow(ListaContatosUiState())
     val uiState: StateFlow<ListaContatosUiState>
@@ -32,4 +38,10 @@ class ListaContatosViewModel @Inject constructor(
 
     }
 
+
+    suspend fun logout() {
+        dataStore.edit { preferences ->
+            preferences[booleanPreferencesKey("isLogged")] = false
+        }
+    }
 }

@@ -4,16 +4,12 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.platform.LocalContext
-import androidx.datastore.preferences.core.booleanPreferencesKey
-import androidx.datastore.preferences.core.edit
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import br.com.alura.helloapp.DestinosHelloApp
-import br.com.alura.helloapp.preferences.dataStore
 import br.com.alura.helloapp.ui.login.FormularioLoginTela
 import br.com.alura.helloapp.ui.login.FormularioLoginViewModel
 import br.com.alura.helloapp.ui.login.LoginTela
@@ -35,22 +31,18 @@ fun NavGraphBuilder.loginGraph(
             val state by viewModel.uiState.collectAsState()
 
             if (state.logado) {
-
                 LaunchedEffect(Unit) {
-//                    navController.navegaLimpo(DestinosHelloApp.HomeGraph.rota)
+                    navController.navegaLimpo(DestinosHelloApp.HomeGraph.rota)
                 }
             }
 
-            val dataStore = LocalContext.current.dataStore
+
             val rememberCoroutineScope = rememberCoroutineScope()
 
             LoginTela(
                 state = state,
                 onClickLogar = {
                     rememberCoroutineScope.launch {
-                        dataStore.edit { preferences ->
-                            preferences[booleanPreferencesKey("isLogged")] = true
-                        }
                         viewModel.tentaLogar()
                     }
                 },
@@ -59,18 +51,7 @@ fun NavGraphBuilder.loginGraph(
                 }
             )
 
-            LaunchedEffect(Unit) {
-                rememberCoroutineScope.launch {
-                    dataStore.data.collect {
-                        val isLogged = it[booleanPreferencesKey("isLogged")]
 
-                        if (isLogged == true) {
-                            navController.navegaLimpo(DestinosHelloApp.HomeGraph.rota);
-                        }
-
-                    }
-                }
-            }
         }
 
         composable(
@@ -79,9 +60,15 @@ fun NavGraphBuilder.loginGraph(
             val viewModel = hiltViewModel<FormularioLoginViewModel>()
             val state by viewModel.uiState.collectAsState()
 
+            val rememberCoroutineScope = rememberCoroutineScope()
+
             FormularioLoginTela(
                 state = state,
                 onSalvar = {
+                    rememberCoroutineScope.launch {
+                        viewModel.saveLogin()
+                    }
+
                     navController.navegaLimpo(DestinosHelloApp.Login.rota)
                 }
             )
